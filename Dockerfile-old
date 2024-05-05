@@ -1,0 +1,32 @@
+# Use golang:1.16-buster as the base image
+FROM golang:1.16-buster AS builder
+
+# Set the working directory to /app
+WORKDIR /app
+
+# Copy the go.mod and go.sum files
+COPY go.* ./
+
+# Install the dependencies
+RUN go mod download
+
+# Copy the Go source files
+COPY *.go ./
+
+# Build the Go binary
+RUN go build -o hello_go_http
+
+# Use an Alpine Linux image as the base for the final image
+FROM alpine:latest
+
+# Set the working directory to /app
+WORKDIR /app
+
+# Copy the Go binary from the builder image
+COPY --from=builder /app/hello_go_http /app/
+
+# Expose the port
+EXPOSE 8080
+
+# Set the entrypoint
+ENTRYPOINT ["/app/hello_go_http"]
